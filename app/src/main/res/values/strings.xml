@@ -1,0 +1,10 @@
+<resources>
+
+    <string name="app_name">TakeMeToUnesp</string>
+    <string name="error_message">Hey! Seu GPS está desligado :(</string>
+    <string name="error_message_button">Já liguei!</string>
+    <string name="destination_label">UNESP Bauru</string>
+    <string name="error_location">Erro ao buscar localização atual. Verifique as permissões do aplicativo</string>
+    <string name="error_location_button">OK :(</string>
+
+</resources>
