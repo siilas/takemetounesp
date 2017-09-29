@@ -58,11 +58,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                final List<LatLng> latLngs) {
 
                 new Handler().post(new Runnable() {
+
                     @Override
                     public void run() {
-                        rota = new ArrayList<>(latLngs);
-                        criarMapa();
+                        if (latLngs != null && !latLngs.isEmpty()) {
+                            rota = new ArrayList<>(latLngs);
+                            criarMapa();
+                        }
                     }
+
                 });
 
             }
