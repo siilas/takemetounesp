@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,7 +28,7 @@ import java.util.List;
 import br.com.silas.takemetounesp.R;
 import br.com.silas.takemetounesp.task.RotaTask;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
 
     private static final LatLng UNESP = new LatLng(-22.331382, -49.160657);
 
@@ -77,7 +78,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mapa = googleMap;
         location = getCurrentLocation();
-        loader.initLoader(1, null, callback);
+        if (location != null) {
+            loader.initLoader(1, null, callback);
+        }
     }
 
     private void criarMapa() {
@@ -108,14 +111,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mapa.setMyLocationEnabled(true);
             LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             Location location = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-            return new LatLng(location.getLatitude(), location.getLongitude());
+            if (location != null) {
+                return new LatLng(location.getLatitude(), location.getLongitude());
+            }
         } catch (SecurityException e) {
             mostrarMensagemErro();
-            return null;
         } catch (Exception e) {
             mostrarMensagemErro();
-            return null;
         }
+        return null;
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if (location != null) {
+            this.location = new LatLng(location.getLatitude(), location.getLongitude());
+            loader.initLoader(1, null, callback);
+        }
+    }
+
+    @Override
+    public void onProviderDisabled(String var) {
+    }
+
+    @Override
+    public void onProviderEnabled(String var) {
+    }
+
+    @Override
+    public void onStatusChanged(String var1, int var2, Bundle var3) {
     }
 
     private void mostrarMensagemErro() {
