@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,7 +27,7 @@ import java.util.List;
 import br.com.silas.takemetounesp.R;
 import br.com.silas.takemetounesp.task.RotaTask;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private static final LatLng UNESP = new LatLng(-22.331382, -49.160657);
 
@@ -82,9 +81,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mapa = googleMap;
         location = getCurrentLocation();
-        if (location != null) {
-            loader.initLoader(1, null, callback);
-        }
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                if (location != null) {
+                    loader.initLoader(1, null, callback);
+                }
+            }
+
+        }, 2000);
     }
 
     private void criarMapa() {
@@ -124,26 +130,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mostrarMensagemErro();
         }
         return null;
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        if (location != null) {
-            this.location = new LatLng(location.getLatitude(), location.getLongitude());
-            loader.initLoader(1, null, callback);
-        }
-    }
-
-    @Override
-    public void onProviderDisabled(String var) {
-    }
-
-    @Override
-    public void onProviderEnabled(String var) {
-    }
-
-    @Override
-    public void onStatusChanged(String var1, int var2, Bundle var3) {
     }
 
     private void mostrarMensagemErro() {
