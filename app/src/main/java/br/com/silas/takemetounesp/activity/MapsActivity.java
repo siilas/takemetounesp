@@ -1,5 +1,6 @@
 package br.com.silas.takemetounesp.activity;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
@@ -35,6 +36,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng location;
     private LoaderManager loader;
     private ArrayList<LatLng> rota;
+    private ProgressDialog progress;
     private LoaderManager.LoaderCallbacks<List<LatLng>> callback;
 
     @Override
@@ -44,6 +46,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        progress = ProgressDialog.show(this, getString(R.string.loading_title),
+                getString(R.string.loading_message));
         loader = getSupportLoaderManager();
         callback = new LoaderManager.LoaderCallbacks<List<LatLng>>() {
 
@@ -88,9 +92,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (location != null) {
                     loader.initLoader(1, null, callback);
                 }
+                progress.hide();
             }
 
-        }, 2000);
+        }, 3000);
     }
 
     private void criarMapa() {
@@ -105,11 +110,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .include(UNESP)
                 .build();
 
-        mapa.animateCamera(CameraUpdateFactory.newLatLngBounds(area, 99));
+        mapa.animateCamera(CameraUpdateFactory.newLatLngBounds(area, 180));
 
         PolylineOptions polylineOptions = new PolylineOptions()
                 .addAll(rota)
-                .width(5)
+                .width(3)
                 .color(Color.RED)
                 .visible(true);
 
