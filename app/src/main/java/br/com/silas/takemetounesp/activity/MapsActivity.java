@@ -8,11 +8,16 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -28,7 +33,10 @@ import java.util.List;
 import br.com.silas.takemetounesp.R;
 import br.com.silas.takemetounesp.task.RotaTask;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements
+        OnMapReadyCallback,
+        GoogleApiClient.ConnectionCallbacks,
+        LocationListener {
 
     private static final LatLng UNESP = new LatLng(-22.331382, -49.160657);
 
@@ -36,6 +44,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng location;
     private LoaderManager loader;
     private ArrayList<LatLng> rota;
+    private GoogleApiClient client;
     private ProgressDialog progress;
     private LoaderManager.LoaderCallbacks<List<LatLng>> callback;
 
@@ -79,23 +88,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
         };
+
+        client = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .build();
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mapa = googleMap;
-        location = getCurrentLocation();
-        new Handler().postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-                if (location != null) {
-                    loader.initLoader(1, null, callback);
-                }
-                progress.hide();
-            }
-
-        }, 3000);
+        client.connect();
     }
 
     private void criarMapa() {
@@ -121,22 +124,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapa.addPolyline(polylineOptions);
     }
 
-    private LatLng getCurrentLocation() {
-        try {
-            mapa.setMyLocationEnabled(true);
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            Location location = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-            if (location != null) {
-                return new LatLng(location.getLatitude(), location.getLongitude());
-            }
-        } catch (SecurityException e) {
-            mostrarMensagemErro();
-        } catch (Exception e) {
-            mostrarMensagemErro();
-        }
-        return null;
-    }
-
     private void mostrarMensagemErro() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.error_location);
@@ -153,6 +140,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         AlertDialog alert = builder.create();
         alert.show();
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        try {
+            mapa.setMyLocationEnabled(true);
+            LocationRequest request = new LocationRequest();
+            request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            LocationServices.FusedLocationApi.requestLocationUpdates(client, request, this);
+        } catch (SecurityException e) {
+            mostrarMensagemErro();
+        } catch (Exception e) {
+            mostrarMensagemErro();
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        try {
+            this.location = new LatLng(location.getLatitude(), location.getLongitude());
+            loader.initLoader(1, null, callback);
+        } catch (Exception e) {
+            mostrarMensagemErro();
+        }
+        progress.hide();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
     }
 
 }
